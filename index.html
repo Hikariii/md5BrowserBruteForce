@@ -1,0 +1,162 @@
+<html>
+<head>
+<script src="jquery-1.10.2.min.js"></script>
+<script src="md5-min.js"></script>
+</head>
+<body>
+
+<span id="status">Klik om te berekenen</span>
+
+<button>Bruteforce</button><br/>
+<label>Testing string: <input id="testing" type="text" value=""/></label>
+
+<script>
+String.prototype.replaceAt = function(index, character) {
+	return this.substr(0, index) + character + this.substr(index+character.length);
+}
+
+
+md5Hash = 'f92bfc75d481c196c1e4deecf7fac3af';
+md5Hash = 'ba248c985ace94863880921d8900c53f';//ggg
+//md5Hash = '9df62e693988eb4e1e1444ece0578579';//ccc
+chars = [
+'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
+'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'
+];
+chars = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n'];
+//chars = ['a','b','c'];
+lastChar = chars[chars.length-1];
+
+var maxDepth = 4;
+var endStrings = [];
+endStrings[0] = '';
+for (var i=1; i<maxDepth; i++) {
+	endStrings[i] = endStrings[i-1] + lastChar;
+}
+//Use a global var for the result with async recursion calls for non-blocking excution
+result = null;
+function bruteForce(testString) {
+	//init default values
+	testString = (testString == undefined || testString == '') ? chars[0] : testString;
+	
+	//match or limit the recursion
+	if (result != null || testString.length > maxDepth) {
+		return;
+	} else if(hex_md5(testString) == md5Hash) {
+		//We can't return the value, because the function is called asynchroneous
+		result = testString;
+		console.log('Match: '+testString);
+		return;
+	}
+	console.log('Tested: '+testString);
+	
+	//if we've tested all combinations, make string larger and run again
+	if (endStrings.indexOf(testString) >= 0) {
+		var s = '';
+		for (var i=0; i<=testString.length; i++) {
+			s += chars[0];
+		}
+		setTimeout(function(){bruteForce(s)}, 100);
+		return;
+	}
+	
+	//recursion
+	var s = testString;
+	for (var i = (testString.length - 1); i>=0; i--) {
+		//test the next string recursively
+		if (s[i] != lastChar) {
+			var newChar = chars[chars.indexOf(s[i])+1];
+			s = s.replaceAt(i, newChar);
+			setTimeout(function(){bruteForce(s)}, 100);
+			return;
+		}
+		s = s.replaceAt(i, chars[0]);
+	}
+}
+
+function oldBruteForce(testString) {
+	//init default vars
+	var maxDepth = 4;
+	testString = (testString == undefined) ? '' : testString;
+	
+	//match or limit the recursion
+	if (result != null || testString.length >= 4) {
+		return;
+	} else if(hex_md5(testString) == md5Hash) {
+		//We can't return the value, because the function is called asynchroneous
+		result = testString;
+		console.log('Match: '+testString);
+		return;
+	}
+	
+	if (testString[0] == 'g') {
+	    console.log('Test: '+testString);
+	}
+	
+	//match chars
+	for (var i=0; i<chars.length; i++) {
+		if (result != null) {
+			return;
+		}
+		//Use setTimeout to prevent blocking and
+		//nested functions to solve closure loop problem (http://stackoverflow.com/a/111200)
+		var fn = function(s) {
+		    setTimeout(function(){oldBruteForce(s)}, 20);
+		}
+		fn(testString+chars[i]);
+	}
+}
+
+
+$('button').one('click', function(){
+	$('#status').html('Berekenen voor hash '+md5Hash);
+	bruteForce();
+	$(this).hide();
+});
+
+
+
+/*
+var maxDepth = 4;
+var startString = '';
+var endStrings = [];
+endStrings[0] = '';
+for (var i=1; i<=maxDepth; i++) {
+	startString += chars[0];
+	endStrings[i] = endStrings[i -1] + chars[chars.length -1];
+}
+
+
+function waawaa(testString, charPos) {
+	//init default values
+	charPos = (charPos == undefined) ? -1 : charPos;
+	testString = (testString == undefined) ? startString : testString;
+	
+	//match or limit the recursion
+	if (result != null || charPos < 0 || testString == '') {
+		return;
+	}
+	
+	if (hex_md5(testString) == md5Hash) {
+		//We can't return the value, because the function is called async
+		result = testString;
+		return;
+	}
+	if (endStrings.indexOf(testString) >= 0) {
+		//make string smaller and run again
+		var s = testString.substring(0,testString.length -1);
+		setTimeout(bruteForce(s, 0), 20);
+		return;
+	}
+	
+	//recursion 
+	var s = testString+chars[charPos], n = charPos+1;
+	console.log(s);
+	//Call the recursion async to prevent browser freeze
+	setTimeout(bruteForce(s, n), 20);
+}
+*/
+</script>
+
+</body>
+</html>
