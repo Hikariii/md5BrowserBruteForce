@@ -4,6 +4,7 @@ import hashlib
 import time
 import datetime
 
+#!python3.2
 #define charset
 hashChars = string.ascii_lowercase + string.ascii_uppercase
 
