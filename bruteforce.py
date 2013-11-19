@@ -1,12 +1,9 @@
+#!python3.2
 # your code goes here
 import string
 import hashlib
 import time
 import datetime
-
-#!python3.2
-#define charset
-hashChars = string.ascii_lowercase + string.ascii_uppercase
 
 #hash to be found
 hashVal = "f92bfc75d481c196c1e4deecf7fac3af"
@@ -28,7 +25,7 @@ def bruteForce(s=''):
   if (counter % 1000 == 0):
     print(s)
   
-  for c in hashChars:
+  for c in string.ascii_letters:
     res = bruteForce(s+c)
     if (res is not None):
       return res
